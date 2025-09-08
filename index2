@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Home Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "your-project.firebaseapp.com",
+      databaseURL: "https://your-project-id.firebaseio.com",
+      projectId: "your-project-id",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    function toggleSwitch(id) {
+      const checkbox = document.getElementById(`switch${id}`);
+      set(ref(db, 'home/switches/' + id), checkbox.checked);
+    }
+
+    // Switches live sync
+    for (let i=1; i<=8; i++) {
+      const switchRef = ref(db, 'home/switches/' + i);
+      onValue(switchRef, (snapshot) => {
+        document.getElementById(`switch${i}`).checked = snapshot.val();
+      });
+    }
+
+    // Environment data
+    onValue(ref(db, 'home/environment/temperature'), snap => {
+      document.getElementById('temp').innerText = snap.val() + " °C";
+    });
+    onValue(ref(db, 'home/environment/humidity'), snap => {
+      document.getElementById('hum').innerText = snap.val() + " %";
+    });
+    onValue(ref(db, 'home/environment/time'), snap => {
+      document.getElementById('time').innerText = snap.val();
+    });
+  </script>
+</head>
+<body class="bg-gray-100 p-6">
+  <h1 class="text-2xl font-bold mb-4 text-center">🏠 Smart Home Dashboard</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Switches -->
+    <div class="bg-white shadow-md rounded-xl p-4">
+      <h2 class="text-xl font-semibold mb-3">Switch Controls</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <!-- 8 Switches -->
+        <div><label class="flex items-center space-x-2"><input type="checkbox" id="switch1" onclick="toggleSwitch(1)"> <span>Switch 1</span></label></div>
+        <div><label class="flex items-center space-x-2"><input type="checkbox" id="switch2" onclick="toggleSwitch(2)"> <span>Switch 2</span></label></div>
+        <div><label class="flex items-center space-x-2"><input type="checkbox" id="switch3" onclick="toggleSwitch(3)"> <span>Switch 3</span></label></div>
+        <div><label class="flex items-center space-x-2"><input type="checkbox" id="switch4" onclick="toggleSwitch(4)"> <span>Switch 4</span></label></div>
+        <div><label class="flex items-center space-x-2"><input type="checkbox" id="switch5" onclick="toggleSwitch(5)"> <span>Switch 5</span></label></div>
+        <div><label class="flex items-center space-x-2"><input type="checkbox" id="switch6" onclick="toggleSwitch(6)"> <span>Switch 6</span></label></div>
+        <div><label class="flex items-center space-x-2"><input type="checkbox" id="switch7" onclick="toggleSwitch(7)"> <span>Switch 7</span></label></div>
+        <div><label class="flex items-center space-x-2"><input type="checkbox" id="switch8" onclick="toggleSwitch(8)"> <span>Switch 8</span></label></div>
+      </div>
+    </div>
+
+    <!-- Environment -->
+    <div class="bg-white shadow-md rounded-xl p-4 text-center">
+      <h2 class="text-xl font-semibold mb-3">Environment</h2>
+      <p class="text-lg">🌡 Temperature: <span id="temp">--</span></p>
+      <p class="text-lg">💧 Humidity: <span id="hum">--</span></p>
+      <p class="text-lg">⏰ Time: <span id="time">--</span></p>
+    </div>
+  </div>
+</body>
+</html>
